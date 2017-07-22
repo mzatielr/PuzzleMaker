@@ -21,3 +21,7 @@ hs_err_pid*
 *.db
 *.idb
 *.jpg
+*.ilk
+*.opensdf
+*.sdf
+*.suo
