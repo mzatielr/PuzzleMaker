@@ -11,7 +11,7 @@
 #include <iostream>
 #include <filesystem>
 
-
+//
 
 //This function takes a directory, and returns a vector of every image opencv could extract from it.
 imlist getImages(std::string path){
