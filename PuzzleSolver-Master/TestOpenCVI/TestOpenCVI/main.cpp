@@ -16,8 +16,8 @@
 #include <stdint.h>
 
 //Dont forget final "/" in directory name.
-static const std::string input = "C:\\Users\\mzaitler\\Downloads\\PuzzleSolver-master\\Scans\\";
-static const std::string output = "C:\\Users\\mzaitler\\Downloads\\PuzzleSolver-master\\Scans\\finaloutput.png";
+static const std::string input = "C:\\jig\\Scans\\";
+static const std::string output = "C:\\jig\\finaloutput.png";
 /*
 // MSVC defines this in winsock2.h!?
 typedef struct timeval {
@@ -72,8 +72,7 @@ int main(int argc, const char * argv[])
 //    puzzle puzzle(input+"horses/", 380, 50);
 
     //Horses back numbered 104 pc
-    puzzle puzzle(input+"horses numbered/", 380, 50);
-
+	puzzle puzzle(input + "Toy Story back\\", 200, 50);
     //gettimeofday(&time, NULL);
     //std::cout << std::endl << "time to initialize:"  << (((time.tv_sec * 1000) + (time.tv_usec / 1000))-inbetween_millis)/1000.0 << std::endl;
   //inbetween_millis = ((time.tv_sec * 1000) + (time.tv_usec / 1000));

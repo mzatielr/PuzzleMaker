@@ -11,7 +11,7 @@
 #include <iostream>
 #include <filesystem>
 
-//
+
 
 //This function takes a directory, and returns a vector of every image opencv could extract from it.
 imlist getImages(std::string path){
@@ -41,12 +41,54 @@ imlist getImages(std::string path){
 
 //Easy way to take a list of images and create a bw image at a specified threshold.
 imlist color_to_bw(imlist color, int threshold){
-    imlist black_and_white;
+	bool a = false;
+	imlist black_and_white;
     for(imlist::iterator i = color.begin(); i != color.end(); i++){
-        cv::Mat bw;
+        cv::Mat bw,bw2,bw3,bw4;
         cv::cvtColor(*i, bw, CV_BGR2GRAY);
-        cv::threshold(bw, bw, threshold, 255, cv::THRESH_BINARY);
-        black_and_white.push_back(bw);
+        	
+		
+
+			cv::namedWindow("thresholding", cv::WINDOW_AUTOSIZE);// Create a window for display.
+			cv::imshow("thresholding", bw);
+			cv::resizeWindow("thresholding", 1000, 1000);
+			cv::waitKey(0);
+
+
+			/*
+			if (a == false)
+			{
+			cv::threshold(bw, bw2, 20, 255, cv::THRESH_BINARY);
+
+			cv::imshow("bw1", bw2);
+			cv::resizeWindow("bw1", 1000, 1000);
+			cv::waitKey(0);
+
+			cv::threshold(bw, bw3, 30, 255, cv::THRESH_BINARY);
+
+			cv::imshow("bw1", bw3);
+			cv::resizeWindow("bw1", 1000, 1000);
+			cv::waitKey(0);
+
+			cv::threshold(bw, bw4, 40, 255, cv::THRESH_BINARY);
+
+			cv::imshow("bw1", bw4);
+			cv::resizeWindow("bw1", 1000, 1000);
+			cv::waitKey(0);
+
+		}
+		*/
+
+		cv::threshold(bw, bw, threshold, 255, cv::THRESH_BINARY);
+		
+		if (a == false)
+		{
+			cv::imshow("thresholding", bw);
+			cv::resizeWindow("thresholding", 1000, 1000);
+			cv::waitKey(0);
+		}
+		a == true;
+		black_and_white.push_back(bw);
     }
     return black_and_white;
 }

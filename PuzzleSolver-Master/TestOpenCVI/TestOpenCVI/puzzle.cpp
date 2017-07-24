@@ -5,6 +5,8 @@
 //  Created by Joe Zeimen on 4/5/13.
 //  Copyright (c) 2013 Joe Zeimen. All rights reserved.
 //
+#include <chrono>
+#include <thread>
 
 #include "puzzle.h"
 #include <opencv/cv.h>
@@ -61,17 +63,36 @@ void puzzle::print_edges(){
 }
 
 std::vector<piece> puzzle::extract_pieces(std::string path, bool needs_filter){
-    std::vector<piece> pieces;
-    imlist color_images = getImages(path);
-    
+  
+	bool a = false;
+	std::vector<piece> pieces;
+	cv::namedWindow("original", cv::WINDOW_AUTOSIZE);// Create a window for display.
+	cv::namedWindow("median blur", cv::WINDOW_AUTOSIZE);// Create a window for display.
+
+	//list of MAT objects
+	imlist color_images = getImages(path);
+	imlist blured_images;
     //Threshold the image, anything of intensity greater than 45 becomes white (255)
     //anything below becomes 0
 //    imlist blured_images = blur(color_images, 7, 5);
-
+	std::cout << "needs_filter: " << needs_filter; 
     imlist bw;
     if(needs_filter){
-        imlist blured_images = median_blur(color_images, 5);
-        bw = color_to_bw(blured_images,threshold);
+
+		cv::imshow("original", color_images[0]);
+		cv::resizeWindow("original", 1000, 1000);
+		cv::waitKey(0);                                          // Wait for a keystroke in the window
+
+        blured_images = median_blur(color_images, 5);
+
+
+		cv::imshow("median blur", blured_images[0]);
+		cv::resizeWindow("median blur", 1000, 1000);
+		cv::waitKey(0);                                          // Wait for a keystroke in the window
+
+
+		//color to black white
+		bw = color_to_bw(blured_images,threshold);
     } else{
         bw= color_to_bw(color_images, threshold);
         filter(bw,2);
@@ -79,7 +100,9 @@ std::vector<piece> puzzle::extract_pieces(std::string path, bool needs_filter){
 
 //    cv::imwrite("/tmp/final/thresh.png", bw[0]);
 
-    
+	
+
+
     //For each input image
     for(int i = 0; i<color_images.size(); i++){
         std::vector<std::vector<cv::Point> > contours;
@@ -94,20 +117,31 @@ std::vector<piece> puzzle::extract_pieces(std::string path, bool needs_filter){
         //For each contour in that image
         //TODO: (In anticipation of the other TODO's Re-create the b/w image
         //    based off of the contour to eliminate noise in the layer mask
-        for(int j = 0; j<contours.size(); j++){
-            int bordersize = 15;
-            cv::Rect r =  cv::boundingRect(contours[j]);
-            if(r.width < piece_size || r.height < piece_size) continue;
+		
+		for (int j = 0; j < contours.size(); j++){
+			int bordersize = 15;
+			cv::Rect r = cv::boundingRect(contours[j]);
+			if (r.width < piece_size || r.height < piece_size) continue;
 
-            
-            
-            cv::Mat new_bw = cv::Mat::zeros(r.height+2*bordersize,r.width+2*bordersize,CV_8UC1);
-            std::vector<std::vector<cv::Point> > contours_to_draw;
-            contours_to_draw.push_back(translate_contour(contours[j], bordersize-r.x, bordersize-r.y));
-            cv::drawContours(new_bw, contours_to_draw, -1, cv::Scalar(255), CV_FILLED);
-            //        std::cout << out_file_name.str() << std::endl;
-            //        cv::imwrite(out_file_name.str(), m);
-//            cv::imwrite("/tmp/final/new_bw.png", new_bw);
+
+
+			cv::Mat new_bw = cv::Mat::zeros(r.height + 2 * bordersize, r.width + 2 * bordersize, CV_8UC1);
+			std::vector<std::vector<cv::Point> > contours_to_draw;
+			contours_to_draw.push_back(translate_contour(contours[j], bordersize - r.x, bordersize - r.y));
+			cv::drawContours(new_bw, contours_to_draw, -1, cv::Scalar(255), CV_FILLED);
+			//        std::cout << out_file_name.str() << std::endl;
+			//        cv::imwrite(out_file_name.str(), m);
+			//            cv::imwrite("/tmp/final/new_bw.png", new_bw);
+
+			if (a == false){
+			cv::namedWindow("contours", cv::WINDOW_AUTOSIZE);// Create a window for display.
+			cv::imshow("contours", new_bw);
+			cv::waitKey(0);
+		}
+			
+
+			
+
 
             r.width += bordersize*2;
             r.height += bordersize*2;
@@ -115,7 +149,25 @@ std::vector<piece> puzzle::extract_pieces(std::string path, bool needs_filter){
             r.y -= bordersize;
 //            cv::imwrite("/tmp/final/bw.png", bw[i](r));            
             cv::Mat mini_color = color_images[i](r);
-            cv::Mat mini_bw = new_bw;//bw[i](r);
+            
+			//TODO return to orig
+			cv::Mat mini_bw = new_bw;// bw[i](r);
+
+		//	std::cout << "contour = " << std::endl << " " << mini_bw << std::endl << std::endl;
+
+	//		std::cout << "original = " << std::endl << " " << bw[i](r) << std::endl << std::endl;
+			
+//			std::this_thread::sleep_for(std::chrono::milliseconds(19999));
+			if (a == false){
+
+				cv::namedWindow("mini_color", cv::WINDOW_AUTOSIZE);// Create a window for display.
+				cv::imshow("mini_color", mini_color);
+				cv::waitKey(0);
+			}
+			a = true;
+
+
+
             //Create a copy so it can't conflict.
             mini_color = mini_color.clone();
             mini_bw = mini_bw.clone();
