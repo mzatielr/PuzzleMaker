@@ -3,6 +3,8 @@
 #include <string.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <iostream>   // std::cout
+#include <string>     // std::string, std::stoi
 
 #define DEBUG_MODE_OFF (0)
 #define DEBUG_MODE_ON (1)
@@ -12,30 +14,32 @@
 #define BACKGROND_COLOR_BLUE (2)
 
 #define RESULT_FILE_WORDS (200)
-#define MAX_CLUSTERS (4) /* number of cluster */
+//#define NumOfcluster (4) /* number of cluster */
 #define DEBUG_MODE (0)/*If u input 0,this program runs as runnning mode. 1 is debug mode*/
+
+using namespace std;
 
 /*function DebugClusterNumber*/
 int DebugClusterNumber(int Number){
-	if (Number > MAX_CLUSTERS)
-	{
-		return 1;
-	}
-	else
-	{
+	
 		return Number;
-	}
+	
 }
 
 int main(int argc, char** argv)
 {
+	int NumOfcluster;
+	
+	cout << ("\nEnter a num of clusters :\n");
+	cin >> NumOfcluster;
+
 	int i, j, size;
 	IplImage *src_img = 0, *dst_img = 0;
 	CvMat tmp_header;
 	CvMat *clusters, *points, *tmp;
-	CvMat *count = cvCreateMat(MAX_CLUSTERS, 1, CV_32SC1);
-	CvMat *centers = cvCreateMat(MAX_CLUSTERS, 3, CV_32FC1);
-	const char *imagename;
+	CvMat *count = cvCreateMat(NumOfcluster, 1, CV_32SC1);
+	CvMat *centers = cvCreateMat(NumOfcluster, 3, CV_32FC1);
+    char *imagename;
 	//set background color
 	int background_color[BACKGROND_COLOR_CHANNELS] = { 255, 135, 60 };
 
@@ -46,7 +50,15 @@ int main(int argc, char** argv)
 	// (1)load a specified file as a 3-channel color image
 	imagename = argc > 1 ? argv[1] : "";
 
-	printf("got path: %s", imagename);
+
+	cout << "enter path\n";
+	cin >> imagename;
+	
+
+	
+		
+	printf("\ngot path: %s", imagename);
+
 	src_img = cvLoadImage(imagename, CV_LOAD_IMAGE_COLOR);
 	if (src_img == 0)
 		return -1;
@@ -71,7 +83,7 @@ int main(int argc, char** argv)
 #endif
 
 	// (3)run k-means clustering algorithm to segment pixels in RGB color space
-	cvKMeans2(points, MAX_CLUSTERS, clusters,
+	cvKMeans2(points, NumOfcluster, clusters,
 		cvTermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0),
 		1, 0, 0, centers, 0);
 
@@ -85,9 +97,9 @@ int main(int argc, char** argv)
 			dst_img->imageData[i * 3 + 2] = (char)centers->data.fl[idx * 3 + 2];
 		}
 		// (5)show source and destination image, and quit when any key pressed
-		cvNamedWindow("src", CV_WINDOW_AUTOSIZE);
+		cvNamedWindow("src", CV_GUI_NORMAL);
 		cvShowImage("src", src_img);
-		cvNamedWindow("low-color", CV_WINDOW_AUTOSIZE);
+		cvNamedWindow("low-color", CV_GUI_NORMAL);
 		cvShowImage("low-color", dst_img);
 		cvWaitKey(0);
 		cvDestroyWindow("src");
@@ -96,7 +108,7 @@ int main(int argc, char** argv)
 	//If u selected DEBUG_MODE_ON, cluster which u selected outputs.
 	//cluster which u didn't select is painted black color.
 	else if (DEBUG_MODE == DEBUG_MODE_ON){
-		for (j = 0; j<MAX_CLUSTERS; j++)
+		for (j = 0; j<NumOfcluster; j++)
 		{
 			//conbine strings
 			char file[RESULT_FILE_WORDS] = "";//DON'T DELETE THIS! OR VARIABLE file ISN'T INITIALIZE.
