@@ -50,16 +50,18 @@ int main(int argc, char** argv)
 
 
 	cout << "enter path\n";
-	cin >> imagename;
-	
-
+	//cin >> imagename;
+	imagename = argv[1];
 	
 		
-	printf("\ngot path: %s", imagename);
+	printf("got path: %s\n", imagename);
 
 	src_img = cvLoadImage(imagename, CV_LOAD_IMAGE_COLOR);
-	if (src_img == 0)
+	if (src_img == nullptr)
+	{
+		printf("Error in loading image %s\n", imagename);
 		return -1;
+	}
 
 	size = src_img->width * src_img->height;
 	dst_img = cvCloneImage(src_img);
