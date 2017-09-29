@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <iostream>   // std::cout
-#include <string>     // std::string, std::stoi
 
 #define DEBUG_MODE_OFF (0)
 #define DEBUG_MODE_ON (1)
