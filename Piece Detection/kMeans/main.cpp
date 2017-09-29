@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 	CvMat *count = cvCreateMat(NumOfcluster, 1, CV_32SC1);
 	CvMat *centers = cvCreateMat(NumOfcluster, 3, CV_32FC1);
     char *imagename;
-	//set background color
+	//set background color 
 	int background_color[BACKGROND_COLOR_CHANNELS] = { 255, 135, 60 };
 
 	//set place u save image file.
