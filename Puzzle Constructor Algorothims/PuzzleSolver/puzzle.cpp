@@ -37,7 +37,7 @@ puzzle::puzzle(std::string folderpath, int estimated_piece_size, int thresh, boo
 }
 
 
-void puzzeeeeeeeeeeeeeeeeeeeeeeeeeele::print_edges(){
+void puzzle::print_edges(){
     for(int i =0; i<pieces.size(); i++){
         for(int j=0; j<4; j++){
             cv::Mat m = cv::Mat::zeros(500, 500, CV_8UC1 );
