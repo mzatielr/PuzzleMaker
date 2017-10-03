@@ -50,7 +50,7 @@ int DebugClusterNumber(int Number){
 
 int main()
 {
-
+	/*
 	int NumOfcluster;
 
 	cout << ("\nEnter a num of clusters :\n");
@@ -62,7 +62,6 @@ int main()
 	CvMat *clusters, *points, *tmp;
 	CvMat *count = cvCreateMat(NumOfcluster, 1, CV_32SC1);
 	CvMat *centers = cvCreateMat(NumOfcluster, 3, CV_32FC1);
-	char *imagename;
 	//set background color
 	int background_color[BACKGROND_COLOR_CHANNELS] = { 255, 135, 60 };
 
@@ -73,8 +72,7 @@ int main()
 	// (1)load a specified file as a 3-channel color image
 
 
-	cout << "enter path\n";
-	cin >> imagename;
+	char *imagename = "Photos\\wpp.jpg";
 
 
 
@@ -161,18 +159,18 @@ int main()
 	//cvReleaseMat(&clusters);
 	//cvReleaseMat(&points);
 	//cvReleaseMat(&count);
-
+	*/
 	// https://github.com/LowWeiLin/OpenCV_ImageBackgroundRemoval/tree/master/OpenCV_ImageBackgroundRemoval
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// KMEANS ENDS AND BACKGROUND BLACKNING STARTS//////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+	
 	//Load source image	
 	//Mat src = imread("human-t-pose.jpg");
 	//Mat src = imread("person1.jpg");
-	//Mat src = imread("person2.jpg");
+	Mat src = imread("Photos\\wpp1.jpg");
 
-	Mat src = dst_img; //////////////////////// TAKE THE OUTPUT OF THE KMEANS AND PUT INSIDE BACKGROUND REMOVAL
+	//Mat src = dst_img; //////////////////////// TAKE THE OUTPUT OF THE KMEANS AND PUT INSIDE BACKGROUND REMOVAL
 
 	//windows
 	
@@ -218,7 +216,7 @@ int main()
 		edges = canny(gray);
 	}
 	else {
-		//Use Sobel filter and thresholding.
+		//Use Sobel filter and thresholding.			
 		edges = sobel(gray);
 		//Automatic thresholding
 		threshold(edges, edges, 0, 255, cv::THRESH_OTSU);

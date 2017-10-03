@@ -7,9 +7,9 @@ using namespace cv;
 static void help() 
 {   
 	cout << "\nThis program demonstrates GrabCut segmentation -- select an object in a region\n"
-		"and then grabcut will attempt to segment it out.\n"
+		"and then grabcut will attempt to segment it out.\n"		"./grabcut <image_name>\n"
+
 		"Call:\n"
-		"./grabcut <image_name>\n"
 		"\nSelect a rectangular area around the object you want to segment\n" <<
 		"\nHot keys: \n"
 		"\tESC - quit the program\n"
@@ -248,7 +248,7 @@ int main(int argc, char** argv)
 {
 	//cv::CommandLineParser parser(argc, argv, "{@input| ../data/messi5.jpg |}");
 	help();
-	string filename = "ninja2.png";
+	string filename = "C:\\Users\\mzaitler\\Documents\\GitHub\\PuzzleMaker\\Piece_Detection\\Data\\OriginalPuzzlePhotos\\WhiteClearBackround\\yellowp.jpg";
 	if (filename.empty())
 	{
 		cout << "\nDurn, empty filename" << endl;
@@ -261,7 +261,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 	const string winName = "image";
-	namedWindow(winName, WINDOW_KEEPRATIO);
+	namedWindow(winName, CV_WINDOW_NORMAL);
 	setMouseCallback(winName, on_mouse, 0);
 	gcapp.setImageAndWinName(image, winName);
 	gcapp.showImage();
