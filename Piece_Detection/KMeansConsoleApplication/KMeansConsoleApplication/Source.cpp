@@ -150,6 +150,36 @@ int GetKernelSize(const int rect_edge, int i, int j, int rows, int cols)
 	return a*b;
 }
 
+void Run_PCA(const int rectEdge, Mat& srcConverterd, Mat& imageAfterPca)
+{
+	for (int i = 0; i < srcConverterd.rows; ++i)
+	{
+		for (int j = 0; j < srcConverterd.cols; ++j)
+		{
+			int kernelSize = GetKernelSize(rectEdge, i, j, srcConverterd.rows, srcConverterd.cols);
+			Mat kernel = Mat::zeros(kernelSize, 3, CV_64FC1);
+			GenerateKernel(srcConverterd, i, j, kernel);
+
+			//PrintMatC1(kernel);
+			
+			//pca
+			//Perform PCA analysis
+			PCA pca_analysis(kernel, noArray(), CV_PCA_DATA_AS_ROW);
+			Mat meanPoint = pca_analysis.mean;
+			//cout << "Mean: rowsXcols " << meanPoint.rows << "X" << meanPoint.cols << endl;
+			//cout << meanPoint << endl;
+
+			imageAfterPca.at<Vec3d>(i, j).val[0] = meanPoint.at<double>(0, 0);
+			imageAfterPca.at<Vec3d>(i, j).val[1] = meanPoint.at<double>(0, 1);
+			imageAfterPca.at<Vec3d>(i, j).val[2] = meanPoint.at<double>(0, 2);
+		}
+	}
+
+	//ShowImage(imageAfterPca, "DoubleImageAfterPCA");
+	imageAfterPca.convertTo(imageAfterPca, CV_8UC3, 255.0);
+	ShowImage(imageAfterPca, "8UImageAfterPCA");
+}
+
 void GenerateNeightMatrix(Mat& src1)
 {
 	const int rectEdge = GetRectEdge();
@@ -172,41 +202,12 @@ void GenerateNeightMatrix(Mat& src1)
 	//srcConverterd.convertTo(srcConverterd, CV_8UC3, 255.0);
 	//PrintMatShort(srcConverterd);
 
-	Mat p = Mat::zeros(src1.cols*src1.rows,  3, CV_64FC1);
 	Mat imageAfterPca = Mat::zeros(src1.rows, src1.cols, CV_64FC3);
 
-	for (int i = 0; i < srcConverterd.rows; ++i)
-	{
-		for (int j = 0; j < srcConverterd.cols; ++j)
-		{
-			int kernelSize = GetKernelSize(rectEdge, i, j, srcConverterd.rows, srcConverterd.cols);
-			Mat kernel = Mat::zeros(kernelSize, 3, CV_64FC1);
-			GenerateKernel(srcConverterd, i, j, kernel);
-
-			//PrintMatC1(kernel);
-			
-			//pca
-			//Perform PCA analysis
-			PCA pca_analysis(kernel, noArray(), CV_PCA_DATA_AS_ROW);
-			Mat meanPoint = pca_analysis.mean;
-			//cout << "Mean: rowsXcols " << meanPoint.rows << "X" << meanPoint.cols << endl;
-			//cout << meanPoint << endl;
-
-			imageAfterPca.at<Vec3d>(i, j).val[0] = meanPoint.at<double>(0, 0);
-			imageAfterPca.at<Vec3d>(i, j).val[1] = meanPoint.at<double>(0, 1);
-			imageAfterPca.at<Vec3d>(i, j).val[2] = meanPoint.at<double>(0, 2);
-
-			// same mean in p
-		}
-	}
-
-	//ShowImage(imageAfterPca, "DoubleImageAfterPCA");
-	imageAfterPca.convertTo(imageAfterPca, CV_8UC3, 255.0);
-	ShowImage(imageAfterPca, "8UImageAfterPCA");
+	Run_PCA(rectEdge, srcConverterd, imageAfterPca);
 
 	Mat kmeansInput = imageAfterPca.clone(); // with pca
 	//Mat kmeansInput = src1.clone(); // without pca
-
 
 	kmeansInput.convertTo(kmeansInput, CV_32FC3, alpha);
 
