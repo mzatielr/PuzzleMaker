@@ -30,65 +30,49 @@ void ShowImage(const Mat& src, const string& name)
 }
 
 
-void MarkPixel(Mat& src, Mat& originalColors, int i, int j)
+void RemoveClusters(Mat& src)
 {
 
-	src.at<Vec3f>(i, j)[0] = -1;
-	
-
-	//DOWN
-	if (i + 1 < src.rows && (src.at<Vec3f>(i + 1, j)[0] == originalColors.at<Vec3f>(i + 1, j)[0]))
-	{
-		cout << i << " " << j << " called to: " << i + 1 << " " << j << "\n";
-		MarkPixel(src, originalColors, i + 1, j);
-	}
-	//////////////////////////////////////////////////////////////////////////
-	//UP
-	if (i - 1 >= 0 && (src.at<Vec3f>(i -1 , j)[0] == originalColors.at<Vec3f>(i -1 , j)[0]))
-	{
-		MarkPixel(src, originalColors, i - 1, j);
-	}
-	//////////////////////////////////////////////////////////////////////////
-	//Left
-	if (j - 1 >= 0 && (src.at<Vec3f>(i, j - 1)[0] == originalColors.at<Vec3f>(i, j - 1)[0]))
-	{
-		MarkPixel(src, originalColors, i, j - 1);
-	}
-	//////////////////////////////////////////////////////////////////////////
-	//Right
-	if (j + 1 < src.cols && (src.at<Vec3f>(i, j + 1)[0] == originalColors.at<Vec3f>(i, j + 1)[0]))
-	{
-		MarkPixel(src, originalColors, i, j - 1);
-	}
-
-}
-
-
-void RemoveClusters( Mat& src)
-{
+	Rect* rect= new Rect();
 
 	double alpha = 1.0 / 255.0;
-	Mat src2 = src.clone();
-	Mat originalColors = src.clone();
 
-	src.convertTo(src, CV_32FC1, alpha);
+
+
 	int i, j = 0;
-	for ( i = 0; i < src.rows; i++)
+//	MarkPixel(src2, src2.rows-1, src2.cols-1);
+
+
+
+
+	// WTF !? what side do i put the cols and rows ?!
+	//can be optimized because edges are down twice :<
+	//TODO output still not perfect
+	//later we can fill with an external color (like -1) and blackned the ORIGINAL picture
+	for ( i = 0; i < src.cols; i=i+15)
 	{
 
-		MarkPixel(src2, originalColors, i, 0);
-		MarkPixel(src2, originalColors, i, src.cols - 1);
+		
+
+		floodFill(src, Point(i, 0), 0, rect, cvScalarAll(0), cvScalarAll(0), 8);
+		floodFill(src, Point(i, src.rows - 1), 0, rect, cvScalarAll(0), cvScalarAll(0), 8);
 
 	}
-	for ( j = 0; j < src.cols; j++)
+	for ( j = 0; j < src.rows; j=j+15)
 	{
 
-		MarkPixel(src2, originalColors, 0, j);
-		MarkPixel(src2, originalColors, src.rows, j);
+	
+		floodFill(src, Point(0, j), 0, rect, cvScalarAll(0), cvScalarAll(0), 8);
+		floodFill(src, Point(src.cols - 1, j), 0, rect, cvScalarAll(0), cvScalarAll(0), 8);
+
+		
 
 	}
 	
-	ShowImage(src2, "neg");
+
+	ShowImage(src, "afterClusterRemoval");
+
+	
 }
 
 
@@ -313,9 +297,12 @@ void GenerateNeightMatrix(Mat& src1)
 	clustered.convertTo(clustered, CV_8U);
 	ShowImage(clustered, "clustered");
 
-	//RemoveClusters(clustered);
-
 	imwrite("output1.jpeg", clustered);
+
+	RemoveClusters(clustered);
+
+	imwrite("finalOut.jpeg", clustered);
+
 }
 
 void KMeans(string path)
@@ -329,19 +316,19 @@ void KMeans(string path)
 	{
 		cout << "Loaded " << src1.rows << " X " << src1.cols << " image\n";
 	}
-	RemoveClusters(src1);
+	//RemoveClusters(src1);
 
 	//imwrite("wspp1.bmp", src1);
-	//GenerateNeightMatrix(src1);
+	GenerateNeightMatrix(src1);
 	//EdgeDetector(src);
 	/// Wait until user exit program by pressing a key
 }
 
 int main(int argc, char** argv) 
 {
-//	KMeans("C:\\Users\\mzaitler\\Desktop\\Puzzle\\KMeansConsoleApplication\\KMeansConsoleApplication\\nonwhite.bmp");
+	//KMeans("C:\\Users\\mzaitler\\Desktop\\Puzzle\\KMeansConsoleApplication\\KMeansConsoleApplication\\nonwhite.bmp");
 
-	KMeans("C:\\oldDesktop\\סדנה\\KMeansConsoleApplication\\output1.jpeg");
+	KMeans("C:\\oldDesktop\\סדנה\\KMeansConsoleApplication\\KMeansConsoleApplication\\nonwhite.bmp");
 
 	waitKey();
 	destroyAllWindows();
