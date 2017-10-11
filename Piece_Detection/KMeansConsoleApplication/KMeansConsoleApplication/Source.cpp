@@ -21,11 +21,55 @@ int const max_lowThreshold = 100;
 int ratio = 3;
 int kernel_size = 3;
 char* window_name = "Edge Map";
+bool isUIMode = false;
+
+string path1;
+string path2;
+string path3;
 
 void ShowImage(const Mat& src, const string& name)
 {
-	namedWindow(name, WINDOW_NORMAL);
-	imshow(name, src);
+	if (isUIMode)
+	{
+		namedWindow(name, WINDOW_NORMAL);
+		imshow(name, src);
+	}
+}
+
+
+void RemoveClusters(Mat& src)
+{
+	Rect* rect= new Rect();
+	double alpha = 1.0 / 255.0;
+	Mat mask = Mat::zeros(src.rows + 2, src.cols + 2, CV_8UC1);
+
+	// East
+	for (int i = 0; i < src.rows; ++i)
+	{
+		floodFill(src, mask, Point(0, i), 0, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
+	}
+
+	// West
+	for (int i = 0; i < src.rows; ++i)
+	{
+		floodFill(src, mask, Point(src.cols - 1, i), 0, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
+	}
+
+	// North
+	for (int i = 0; i < src.cols; ++i)
+	{
+		floodFill(src, mask, Point(i, 0), 0, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
+	}
+
+	// South
+	for (int i = 0; i < src.cols; ++i)
+	{
+		floodFill(src, mask, Point(i, src.rows - 1), 0, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
+	}
+	imwrite(path3, mask);
+	ShowImage(src, "afterClusterRemoval");
+	ShowImage(mask, "Mask");
+	return;
 }
 
 /**
@@ -246,21 +290,43 @@ void GenerateNeightMatrix(Mat& src1)
 
 	clustered.convertTo(clustered, CV_8U);
 	ShowImage(clustered, "clustered");
-	imwrite("output1.jpeg", clustered);
+
+	imwrite(path1, clustered);
+
+	RemoveClusters(clustered);
+
+	imwrite(path2, clustered);
 }
 
 void KMeans(string path)
 {
 	Mat src1 = imread(path);
+	if (src1.empty())
+	{
+		cout << "ATTENTION: no image loaded!\n";
+	}
+	else
+	{
+		cout << "Loaded " << src1.rows << " X " << src1.cols << " image\n";
+	}
+	//RemoveClusters(src1);
+
 	//imwrite("wspp1.bmp", src1);
 	GenerateNeightMatrix(src1);
 	//EdgeDetector(src);
 	/// Wait until user exit program by pressing a key
 }
 
+
 int main(int argc, char** argv) 
 {
-	KMeans("C:\\Users\\mzaitler\\Desktop\\Puzzle\\KMeansConsoleApplication\\KMeansConsoleApplication\\nonwhite.bmp");
+	path1 = argv[2];
+	path2 = argv[3];
+	path3 = argv[4];
+	KMeans(argv[1]);
+	
+	//KMeans("C:\\oldDesktop\\סדנה\\KMeansConsoleApplication\\KMeansConsoleApplication\\nonwhite.bmp");
+
 	waitKey();
 	destroyAllWindows();
 
