@@ -29,3 +29,5 @@ Puzzle Constructor Algorothims/PuzzleSolver/puzzle.cpp
 Puzzle Constructor Algorothims/PuzzleSolver/TestOpenCVI.vcxproj
 Puzzle Constructor Algorothims/PuzzleSolver/TestOpenCVI.vcxproj
 Puzzle Constructor Algorothims/PuzzleSolver/TestOpenCVI.vcxproj
+Piece_Detection/KMeansConsoleApplication/KMeansConsoleApplication/Source.cpp
+*.cpp

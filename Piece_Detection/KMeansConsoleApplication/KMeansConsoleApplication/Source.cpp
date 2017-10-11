@@ -11,7 +11,8 @@ using namespace std;
 
 // Edge Detection area
 /// Global variables
-
+int neutralColor ;
+Mat src1; //will allways contain the original image ONLY
 Mat src, src_gray;
 Mat dst, detected_edges;
 
@@ -21,7 +22,7 @@ int const max_lowThreshold = 100;
 int ratio = 3;
 int kernel_size = 3;
 char* window_name = "Edge Map";
-bool isUIMode = false;
+bool isUIMode = true;
 
 string path1;
 string path2;
@@ -35,40 +36,76 @@ void ShowImage(const Mat& src, const string& name)
 		imshow(name, src);
 	}
 }
+//function to blacken the background from the ORIGINAL image
+//todo: not working !! 
+void blackenOrigImage(Mat& blackenClustered)
+{
+	setbuf(stdout, NULL);
+	double alpha = 1.0 / 255.0;
+	Mat origBlacken = src1.clone();
+	origBlacken.convertTo(origBlacken, CV_32FC3, alpha);
 
+	for (int i = 0; i < blackenClustered.rows; ++i)
+	{
+		for (int j = 0; j < blackenClustered.cols; ++j)
+		{
+			//cout << i << " " << j << "\n";
+			if (blackenClustered.at<uchar>(Point(i,j )) == neutralColor)// access violation thrown at this line, why ?
+			{
+				origBlacken.at<Vec3b>(1, 1).val[0] =0 ;
+				//cout << "aaaaaaaaaaaaaaaaaaaaaaaaaaa\n";
+				origBlacken.at<Vec3d>(i, j).val[1] = 0;
+				origBlacken.at<Vec3d>(i, j).val[2] = 0;
+			}
+		}
+
+	}
+
+	ShowImage(origBlacken, "finalOutPut\n");
+}
 
 void RemoveClusters(Mat& src)
 {
+	cout << "Starting cluster removal...\n";
 	Rect* rect= new Rect();
 	double alpha = 1.0 / 255.0;
 	Mat mask = Mat::zeros(src.rows + 2, src.cols + 2, CV_8UC1);
 
+
+	neutralColor = 1;
 	// East
 	for (int i = 0; i < src.rows; ++i)
 	{
-		floodFill(src, mask, Point(0, i), 0, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
+		floodFill(src, mask, Point(0, i), neutralColor, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
 	}
 
 	// West
 	for (int i = 0; i < src.rows; ++i)
 	{
-		floodFill(src, mask, Point(src.cols - 1, i), 0, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
+		floodFill(src, mask, Point(src.cols - 1, i), neutralColor, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
 	}
 
 	// North
 	for (int i = 0; i < src.cols; ++i)
 	{
-		floodFill(src, mask, Point(i, 0), 0, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
+		floodFill(src, mask, Point(i, 0), neutralColor, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
 	}
 
 	// South
 	for (int i = 0; i < src.cols; ++i)
 	{
-		floodFill(src, mask, Point(i, src.rows - 1), 0, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
+		floodFill(src, mask, Point(i, src.rows - 1), neutralColor, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
 	}
+	cout << "Finished cluster removal\n";
+
 	imwrite(path3, mask);
 	ShowImage(src, "afterClusterRemoval");
 	ShowImage(mask, "Mask");
+
+	blackenOrigImage(src);
+
+
+
 	return;
 }
 
@@ -206,6 +243,7 @@ void GenerateNeightMatrix(Mat& src1)
 
 	//ShowImage(src1, "blurred");
 	//PrintMatShort(src1);
+	Mat origBlaken = src1.clone();
 
 	Mat srcConverterd = src1.clone();
 	double alpha = 1.0 / 255.0;
@@ -291,16 +329,13 @@ void GenerateNeightMatrix(Mat& src1)
 	clustered.convertTo(clustered, CV_8U);
 	ShowImage(clustered, "clustered");
 
-	imwrite(path1, clustered);
-
 	RemoveClusters(clustered);
 
-	imwrite(path2, clustered);
 }
 
 void KMeans(string path)
 {
-	Mat src1 = imread(path);
+	src1 = imread(path);
 	if (src1.empty())
 	{
 		cout << "ATTENTION: no image loaded!\n";
@@ -320,12 +355,15 @@ void KMeans(string path)
 
 int main(int argc, char** argv) 
 {
+	/*
 	path1 = argv[2];
 	path2 = argv[3];
 	path3 = argv[4];
-	KMeans(argv[1]);
-	
-	//KMeans("C:\\oldDesktop\\סדנה\\KMeansConsoleApplication\\KMeansConsoleApplication\\nonwhite.bmp");
+	KMeans(argv[1]);*/
+	path1 = "a.jpg";
+	path2 = "b.jpg";
+	path3 = "c.jpg";
+	KMeans("C:\\oldDesktop\\סדנה\\KMeansConsoleApplication\\KMeansConsoleApplication\\nonwhite.bmp");
 
 	waitKey();
 	destroyAllWindows();
