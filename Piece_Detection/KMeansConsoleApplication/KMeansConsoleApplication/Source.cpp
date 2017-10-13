@@ -5,6 +5,8 @@
 
 #include <iostream>
 #include <thr/xthrcommon.h>
+#include <ctime>
+/* time_t, struct tm, difftime, time, mktime */
 
 using namespace cv;
 using namespace std;
@@ -22,6 +24,8 @@ int ratio = 3;
 int kernel_size = 3;
 char* window_name = "Edge Map";
 bool isUIMode = false;
+
+const double alpha = 1.0 / 255.0; // Don't change const value
 
 string path1;
 string path2;
@@ -66,9 +70,11 @@ void RemoveClusters(Mat& src)
 	{
 		floodFill(src, mask, Point(i, src.rows - 1), 0, rect, cvScalarAll(0), cvScalarAll(0), 8 | (255 << 8));
 	}
-	imwrite(path3, mask);
+	imwrite("Mask.bmp", mask);
+
 	ShowImage(src, "afterClusterRemoval");
 	ShowImage(mask, "Mask");
+
 	return;
 }
 
@@ -137,9 +143,9 @@ void GenerateKernel(const Mat& src, int i, int j, Mat& kernel)
 	{
 		for (int col = max(0, j - shift); col <= min(src.cols - 1, j + shift); ++col)
 		{
-			kernel.at<double>(cnt, 0) = static_cast<double>(src.at<Vec3d>(row, col).val[0]);
-			kernel.at<double>(cnt, 1) = src.at<Vec3d>(row, col).val[1];
-			kernel.at<double>(cnt, 2) = src.at<Vec3d>(row, col).val[2];
+			kernel.at<float>(cnt, 0) = static_cast<float>(src.at<Vec3d>(row, col).val[0]);
+			kernel.at<float>(cnt, 1) = static_cast<float>(src.at<Vec3d>(row, col).val[1]);
+			kernel.at<float>(cnt, 2) = static_cast<float>(src.at<Vec3d>(row, col).val[2]);
 			cnt++;
 		}
 	}
@@ -194,6 +200,81 @@ int GetKernelSize(const int rect_edge, int i, int j, int rows, int cols)
 	return a*b;
 }
 
+// Input: 
+//		rectEdge - rect size for pca evaluation 
+//		srcConverterd - Type: CV_64FC3, src image to calculate pca new image
+// Output:
+//		imageAfterPca - Type: CV_32FC3, initialized to zeros Mat with equal size as src image
+void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca)
+{
+	double pcaCoreTimeCounter = 0;
+	time_t temp1, temp2;
+	time_t time1, time2;
+	PCA pca_analysis;
+
+	time(&time1);
+
+	auto emptyArray = noArray();
+	for (int i = 0; i < srcConverterd.rows; ++i)
+	{
+		for (int j = 0; j < srcConverterd.cols; ++j)
+		{
+			int kernelSize = GetKernelSize(rectEdge, i, j, srcConverterd.rows, srcConverterd.cols);
+			Mat kernel = Mat::zeros(kernelSize, 3, CV_32FC1);
+			GenerateKernel(srcConverterd, i, j, kernel);
+
+			//PrintMatC1(kernel);
+			
+			//pca
+			//Perform PCA analysis
+			time(&temp1);
+			pca_analysis(kernel, emptyArray, CV_PCA_DATA_AS_ROW);
+			time(&temp2);
+			pcaCoreTimeCounter += difftime(temp2, temp1);
+			Mat meanPoint = pca_analysis.mean;
+
+			//cout << "Mean: rowsXcols " << meanPoint.rows << "X" << meanPoint.cols << endl;
+			//cout << meanPoint << endl;
+
+			imageAfterPca.at<Vec3d>(i, j).val[0] = meanPoint.at<float>(0, 0);
+			imageAfterPca.at<Vec3d>(i, j).val[1] = meanPoint.at<float>(0, 1);
+			imageAfterPca.at<Vec3d>(i, j).val[2] = meanPoint.at<float>(0, 2);
+
+			// same mean in p
+		}
+	}
+	time(&time2);
+
+	std::cout << "All iteration took " << difftime(time2, time1) << endl;
+	cout << "PCA analysis took " << pcaCoreTimeCounter << endl;
+	ShowImage(imageAfterPca, "8UImageAfterPCA");
+
+	imageAfterPca.convertTo(imageAfterPca, CV_8UC3, 255.0);
+
+	imwrite("ImageAfterPCA.bmp", imageAfterPca);
+	imageAfterPca.convertTo(imageAfterPca, CV_32FC3, alpha);
+
+}
+
+// Input: 
+//		imageAfterPca- Type: CV_32FC3, src image to calculate kmeans input mat
+// Output:
+//		kmeansMat - KMeans imput mat. Initialized to:  Mat::zeros(imageAfterPca.rows*imageAfterPca.cols, 1, CV_32FC3);
+void GenerateKmeansInputMat(const Mat& imageAfterPca, Mat& kmeansMat)
+{
+	int counter = 0;
+	for (int i = 0; i<imageAfterPca.rows; i++)
+	{
+		for (int j = 0; j < imageAfterPca.cols; ++j)
+		{
+			kmeansMat.at<Vec3f>(counter, 0)[0] = imageAfterPca.at<Vec3f>(i, j)[0];
+			kmeansMat.at<Vec3f>(counter, 0)[1] = imageAfterPca.at<Vec3f>(i, j)[1];
+			kmeansMat.at<Vec3f>(counter, 0)[2] = imageAfterPca.at<Vec3f>(i, j)[2];
+			counter++;
+		}
+	}
+}
+
 void GenerateNeightMatrix(Mat& src1)
 {
 	const int rectEdge = GetRectEdge();
@@ -206,67 +287,24 @@ void GenerateNeightMatrix(Mat& src1)
 
 	//ShowImage(src1, "blurred");
 	//PrintMatShort(src1);
+	
 
-	Mat srcConverterd = src1.clone();
-	double alpha = 1.0 / 255.0;
-	cout << alpha << endl;
-	srcConverterd.convertTo(srcConverterd, CV_64FC3, alpha);
+	src1.convertTo(src1, CV_64FC3, alpha);
 	//PrintMatDouble(srcConverterd);
 
 	//srcConverterd.convertTo(srcConverterd, CV_8UC3, 255.0);
 	//PrintMatShort(srcConverterd);
 
-	Mat p = Mat::zeros(src1.cols*src1.rows,  3, CV_64FC1);
 	Mat imageAfterPca = Mat::zeros(src1.rows, src1.cols, CV_64FC3);
-
-	for (int i = 0; i < srcConverterd.rows; ++i)
-	{
-		for (int j = 0; j < srcConverterd.cols; ++j)
-		{
-			int kernelSize = GetKernelSize(rectEdge, i, j, srcConverterd.rows, srcConverterd.cols);
-			Mat kernel = Mat::zeros(kernelSize, 3, CV_64FC1);
-			GenerateKernel(srcConverterd, i, j, kernel);
-
-			//PrintMatC1(kernel);
-			
-			//pca
-			//Perform PCA analysis
-			PCA pca_analysis(kernel, noArray(), CV_PCA_DATA_AS_ROW);
-			Mat meanPoint = pca_analysis.mean;
-			//cout << "Mean: rowsXcols " << meanPoint.rows << "X" << meanPoint.cols << endl;
-			//cout << meanPoint << endl;
-
-			imageAfterPca.at<Vec3d>(i, j).val[0] = meanPoint.at<double>(0, 0);
-			imageAfterPca.at<Vec3d>(i, j).val[1] = meanPoint.at<double>(0, 1);
-			imageAfterPca.at<Vec3d>(i, j).val[2] = meanPoint.at<double>(0, 2);
-
-			// same mean in p
-		}
-	}
-
+	cout << "Starting pca" << endl;
+	ExecutePCA(rectEdge, src1, imageAfterPca);
+	cout << "End of PCA stage" << endl;
 	//ShowImage(imageAfterPca, "DoubleImageAfterPCA");
-	imageAfterPca.convertTo(imageAfterPca, CV_8UC3, 255.0);
-	ShowImage(imageAfterPca, "8UImageAfterPCA");
+	//imageAfterPca.convertTo(imageAfterPca, CV_8UC3, 255.0);
 
-	Mat kmeansInput = imageAfterPca.clone(); // with pca
-	//Mat kmeansInput = src1.clone(); // without pca
-
-
-	kmeansInput.convertTo(kmeansInput, CV_32FC3, alpha);
-
-	Mat kmeansMat = Mat::zeros(kmeansInput.rows*kmeansInput.cols, 1, CV_32FC3);
+	Mat kmeansMat = Mat::zeros(imageAfterPca.rows*imageAfterPca.cols, 1, CV_32FC3);
 	
-	int counter = 0;
-	for (int i = 0; i<kmeansInput.rows; i++)
-	{
-		for (int j = 0; j < kmeansInput.cols; ++j)
-		{
-			kmeansMat.at<Vec3f>(counter, 0)[0] = kmeansInput.at<Vec3f>(i, j)[0];
-			kmeansMat.at<Vec3f>(counter, 0)[1] = kmeansInput.at<Vec3f>(i, j)[1];
-			kmeansMat.at<Vec3f>(counter, 0)[2] = kmeansInput.at<Vec3f>(i, j)[2];
-			counter++;
-		}
-	}
+	GenerateKmeansInputMat(imageAfterPca, kmeansMat);
 
 	cout << "Executing kmeans" << endl;
 	Mat bestLabels, centers;
@@ -276,26 +314,27 @@ void GenerateNeightMatrix(Mat& src1)
 		TermCriteria(TermCriteria::Type::COUNT + TermCriteria::Type::EPS, 10, 1.0), 1, KMEANS_PP_CENTERS, centers);
 
 	cout << "Finish to execute kmeans" << endl;
+
 	int colors[K];
 	for (int i = 0; i<K; i++)
 	{
 		colors[i] = 255 / (i + 1);
 	}
 
-	Mat clustered = Mat(kmeansInput.rows, kmeansInput.cols, CV_32F);
-	for (int i = 0; i<kmeansInput.cols*kmeansInput.rows; i++)
+	Mat clustered = Mat(imageAfterPca.rows, imageAfterPca.cols, CV_32F);
+	for (int i = 0; i<imageAfterPca.cols*imageAfterPca.rows; i++)
 	{
-		clustered.at<float>(i / kmeansInput.cols, i%kmeansInput.cols) = static_cast<float>(colors[bestLabels.at<int>(0, i)]);
+		clustered.at<float>(i / imageAfterPca.cols, i%imageAfterPca.cols) = static_cast<float>(colors[bestLabels.at<int>(0, i)]);
 	}
 
 	clustered.convertTo(clustered, CV_8U);
 	ShowImage(clustered, "clustered");
 
-	imwrite(path1, clustered);
+	imwrite("ClusterdImage.bmp", clustered);
 
 	RemoveClusters(clustered);
 
-	imwrite(path2, clustered);
+	imwrite("AfterClusterRemoval.bmp", clustered);
 }
 
 void KMeans(string path)
@@ -303,7 +342,8 @@ void KMeans(string path)
 	Mat src1 = imread(path);
 	if (src1.empty())
 	{
-		cout << "ATTENTION: no image loaded!\n";
+		cout << "ATTENTION: no image loaded! Stopping Execution\n";
+		return;
 	}
 	else
 	{
@@ -320,13 +360,8 @@ void KMeans(string path)
 
 int main(int argc, char** argv) 
 {
-	path1 = argv[2];
-	path2 = argv[3];
-	path3 = argv[4];
 	KMeans(argv[1]);
-	
 	//KMeans("C:\\oldDesktop\\סדנה\\KMeansConsoleApplication\\KMeansConsoleApplication\\nonwhite.bmp");
-
 	waitKey();
 	destroyAllWindows();
 
