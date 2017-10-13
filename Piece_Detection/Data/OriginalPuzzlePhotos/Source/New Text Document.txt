@@ -1,0 +1,1 @@
+C:\Users\mzaitler\Documents\GitHub\PuzzleMaker\Piece_Detection\KMeansConsoleApplication\x64\Release\KMeansConsoleApplication.exe 1.jpg 1_1.bmp 1_2.bmp 1_3.bmp
