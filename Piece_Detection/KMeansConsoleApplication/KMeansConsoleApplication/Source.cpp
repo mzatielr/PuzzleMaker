@@ -305,7 +305,8 @@ void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca
 				FillDataInPcaInput(pcaInput, globalCnt, kernel);
 				globalCnt++; // IS IT THE PRObLeM ?
 			}
-			else{ 
+			else
+			{ 
 				numOfDiscardedPixels++;
 		//		cout << i << " "<< j<<'\n'; 
 			
