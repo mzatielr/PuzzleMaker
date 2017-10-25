@@ -71,7 +71,7 @@ void RemoveClusters(Mat& src)
 	{
 		floodFill(src, mask, Point(i, src.rows - 1), 0, rect, cvScalarAll(0), cvScalarAll(0), 4 | (255 << 8));
 	}
-	imwrite(path1+"Mask.bmp", mask);
+	imwrite(path1 + "Mask.bmp", mask);
 
 	ShowImage(src, "afterClusterRemoval");
 	ShowImage(mask, "Mask");
@@ -146,60 +146,60 @@ int GenerateKernel(const Mat& src, int i, int j, Mat& kernel)
 
 	if (i - shift < 0)
 	{
-	//	cout << i - shift << "< 0 \n";
+		//	cout << i - shift << "< 0 \n";
 		return 0;
 	}
 	if (j - shift < 0)
 	{
-	//	cout << j - shift << "< 0 \n";
+		//	cout << j - shift << "< 0 \n";
 		return 0;
 	}
 	if (i + shift >= src.rows)
 	{
-	//	cout << i + shift << ">=" << src.rows<<"\n";
+		//	cout << i + shift << ">=" << src.rows<<"\n";
 		return 0;
 	}
 	if (j + shift >= src.cols)
 	{
-	//	cout << j + shift << ">=" << src.cols<<"\n";
+		//	cout << j + shift << ">=" << src.cols<<"\n";
 
 		return 0;
 	}
 
 	int cnt = 0;
 
-	int a1 =  i - shift;
-	int a2 =  i + shift;
-	int b1 =  j - shift;
-	int b2 =  j + shift;
+	int a1 = i - shift;
+	int a2 = i + shift;
+	int b1 = j - shift;
+	int b2 = j + shift;
 
 	/*
 	int a1 = max(0, i - shift);
 	int a2 = min(src.rows, a1 + rectEdge);
-	
+
 	if (a1 + rectEdge >= src.rows)
 	{
-		
-		int t = (src.rows - (a1 + rectEdge));
-		a1 -= t;
+
+	int t = (src.rows - (a1 + rectEdge));
+	a1 -= t;
 	}
 
 	int b1 = max(0, j - shift);
 	int b2 = min(src.cols, b1 + rectEdge);
-	
+
 	if (b1 + rectEdge >= src.cols)
 	{
-		cout << a1 << ">=" << src.rows << '\n';
+	cout << a1 << ">=" << src.rows << '\n';
 
-		return 0;
-		//int t = (src.cols - (b1 + rectEdge));
-		//b1 -= t;
+	return 0;
+	//int t = (src.cols - (b1 + rectEdge));
+	//b1 -= t;
 	}
 	//cout << "a2: " << a2 << " a1: " << a1 << " b2: " << b2 << " b1: " << b1 << endl;
 
 	*/
 
- 	//CV_Assert(a2 - a1 == rectEdge && b2 - b1 == rectEdge);
+	//CV_Assert(a2 - a1 == rectEdge && b2 - b1 == rectEdge);
 	for (int row = a1; row < a2; ++row)
 	{
 		for (int col = b1; col < b2; ++col)
@@ -306,15 +306,15 @@ void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca
 				globalCnt++; // IS IT THE PRObLeM ?
 			}
 			else
-			{ 
+			{
 				numOfDiscardedPixels++;
-		//		cout << i << " "<< j<<'\n'; 
-			
+				//		cout << i << " "<< j<<'\n'; 
+
 			}
 			//PrintMatC1(kernel);
 		}
 	}
-	cout <<"discarded "<< numOfDiscardedPixels << " out of " << srcConverterd.cols * srcConverterd.rows<<"\n";
+	cout << "discarded " << numOfDiscardedPixels << " out of " << srcConverterd.cols * srcConverterd.rows << "\n";
 	time(&time2);
 
 	//pca
@@ -329,12 +329,12 @@ void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca
 	pca_analysis.project(pcaInput, projection_result);
 	CV_Assert(3 == projection_result.cols && projection_result.rows == pcaInput.rows);
 
-	int shift = rectEdge / 2; 
+	int shift = rectEdge / 2;
 	int count = 0;
 	for (int i = 0; i < srcConverterd.rows - shift * 2; i++)
 	{
 
-		for (int j = 0; j < srcConverterd.cols - shift*2; j++)
+		for (int j = 0; j < srcConverterd.cols - shift * 2; j++)
 		{
 			imageAfterPca.at<Vec3f>(i, j).val[0] = projection_result.at<float>(count, 0);
 			imageAfterPca.at<Vec3f>(i, j).val[1] = projection_result.at<float>(count, 1);
@@ -350,7 +350,7 @@ void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca
 	imageAfterPca.convertTo(imageAfterPca, CV_8UC3, 255.0);
 	cout << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n";
 
-//	cout << pcaInput;
+	//	cout << pcaInput;
 	cout << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n";
 
 	ShowImage(imageAfterPca, "8UImageAfterPCA");
@@ -380,7 +380,7 @@ void GenerateKmeansInputMat(const Mat& imageAfterPca, Mat& kmeansMat)
 void GenerateNeightMatrix(Mat& src1)
 {
 	const int rectEdge = GetRectEdge();
-	
+
 	cout << "Starting pre stage" << endl;
 	ShowImage(src1, "original");
 
@@ -398,13 +398,13 @@ void GenerateNeightMatrix(Mat& src1)
 	//PrintMatShort(srcConverterd);
 
 	//imageAfterPCA will be smaller then the original one because image edges were trimmed !!
-	Mat imageAfterPca = Mat::zeros(src1.rows - (rectEdge -1) , src1.cols - (rectEdge-1 ), CV_32FC3);
+	Mat imageAfterPca = Mat::zeros(src1.rows - (rectEdge - 1), src1.cols - (rectEdge - 1), CV_32FC3);
 	cout << "Starting pca" << endl;
 	ExecutePCA(rectEdge, src1, imageAfterPca);
 	cout << "End of PCA stage" << endl;
 	//ShowImage(imageAfterPca, "DoubleImageAfterPCA");
 	//imageAfterPca.convertTo(imageAfterPca, CV_8UC3, 255.0);
-
+	return;
 	Mat kmeansMat = Mat::zeros(imageAfterPca.rows * imageAfterPca.cols, 1, CV_32FC3);
 
 	GenerateKmeansInputMat(imageAfterPca, kmeansMat);
@@ -413,7 +413,7 @@ void GenerateNeightMatrix(Mat& src1)
 	Mat bestLabels, centers;
 
 	kmeans(kmeansMat, K, bestLabels,
-	       TermCriteria(TermCriteria::Type::COUNT + TermCriteria::Type::EPS, 10, 1.0), 1, KMEANS_PP_CENTERS, centers);
+		TermCriteria(TermCriteria::Type::COUNT + TermCriteria::Type::EPS, 10, 1.0), 1, KMEANS_PP_CENTERS, centers);
 
 	cout << "Finish to execute kmeans" << endl;
 
@@ -433,11 +433,11 @@ void GenerateNeightMatrix(Mat& src1)
 	ShowImage(clustered, "clustered");
 
 
-	imwrite(path1+"ClusterdImage.bmp", clustered);
+	imwrite(path1 + "ClusterdImage.bmp", clustered);
 
 	RemoveClusters(clustered);
 
-	imwrite(path1+"AfterClusterRemoval.bmp", clustered);
+	imwrite(path1 + "AfterClusterRemoval.bmp", clustered);
 }
 
 void KMeans(string path)
@@ -446,9 +446,9 @@ void KMeans(string path)
 	size_t position = path.find(".");
 
 
-	path1 = path.substr(0,position);
+	path1 = path.substr(0, position);
 
-	cout << "Results saved at: " << path1 <<'\n';
+	cout << "Results saved at: " << path1 << '\n';
 
 
 	Mat src1 = imread(path);
@@ -477,19 +477,9 @@ void KMeans(string path)
 	/// Wait until user exit program by pressing a key
 }
 
-
-int main(int argc, char** argv)
+void ExecutePreImageProcessing(string imagePath)
 {
-	for (int i = 1; i < argc; ++i)
-	{
-		string currentImage = argv[i];
-		cout << "Handling follwing image " << currentImage << endl;
- 		KMeans(currentImage);
-	}
-	
-	//KMeans("C:\\oldDesktop\\סדנה\\KMeansConsoleApplication\\KMeansConsoleApplication\\nonwhite.bmp");
-	waitKey();
-	destroyAllWindows();
-
-	return 0;
+	cout << "Starting PCA for image " << imagePath << endl;
+	KMeans(imagePath); 
+	cout << "Ending PCA processing" << endl;
 }

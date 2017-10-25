@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include "pca.h"
 
 using namespace std;
 using namespace cv;
@@ -117,7 +118,6 @@ Point midPointFromCollection(vector<Point> collection)
 	Point midPointResult;
 	for (int i = 0; i < collection.size(); i++)
 	{
-
 		for (int j = 0; j < collection.size(); j++)
 		{
 			m = euclidDistance(collection[i], collection[j]);
@@ -393,7 +393,9 @@ static void on_mouse(int event, int x, int y, int flags, void* param)
 }
 int main(int argc, char** argv)
 {
-	_CrtDbgBreak();
+	ExecutePreImageProcessing("orig5.jpg");
+	
+	//_CrtDbgBreak();
 	cv::CommandLineParser parser(argc, argv, "{@input| ../data/messi5.jpg |}");
 	help();
 	string filename = "pca.jpg";
@@ -418,7 +420,7 @@ int main(int argc, char** argv)
 	gcapp.showImage();
 	for (;;)
 	{
-		char c = (char)waitKey(0);
+		char c = static_cast<char>(waitKey(0));
 		switch (c)
 		{
 		case '\x1b':
