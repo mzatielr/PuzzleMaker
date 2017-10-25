@@ -81,14 +81,13 @@ vector<Point> cornerHarris_demo( Mat& src)
 				}
 			}
 		}
+
+		if (!pointCollection.empty())
+			thresh--;
+		else
+			thresh -= 10;
+
 		cout << "found " << pointCollection.size() << " corrners\n";
-		if (pointCollection.size() - 20 < 10)
-		{
-			thresh = thresh - 1;
-		}
-		else{
-			thresh = thresh - 10;
-		}
 	}
 	if (pointCollection.size() < 2)
 	{
@@ -396,8 +395,8 @@ int main(int argc, char** argv)
 	ExecutePreImageProcessing("orig5.jpg");
 	
 	//_CrtDbgBreak();
-	cv::CommandLineParser parser(argc, argv, "{@input| ../data/messi5.jpg |}");
 	help();
+
 	string filename = "pca.jpg";
 	if (filename.empty())
 	{
