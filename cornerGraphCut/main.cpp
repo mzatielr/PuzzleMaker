@@ -46,12 +46,15 @@ vector<Point> cornerHarris_demo( Mat& src)
 	/// Detector parameters
 	int blockSize = 2;
 	int apertureSize = 3;
-	double k = 0.1;
+	double k = 0.045;
 	Mat src_gray;
 	char* corners_window = "Corners detected";
-	int thresh = 200;
-
+	int thresh = 500;
+	
+	// Convert src image to gray color
 	cvtColor(src, src_gray, CV_BGR2GRAY);
+	imwrite("gray.bmp", src_gray);
+
 
 	/// Detecting corners
 	cornerHarris(src_gray, dst, blockSize, apertureSize, k, BORDER_DEFAULT);
@@ -60,21 +63,32 @@ vector<Point> cornerHarris_demo( Mat& src)
 	normalize(dst, dst_norm, 0, 255, NORM_MINMAX, CV_32FC1, Mat());
 	convertScaleAbs(dst_norm, dst_norm_scaled);
 
-	std::vector<Point> pointCollection;
+	imwrite("dst_norm_scaled.bmp", dst_norm_scaled);
 
-	/// Drawing a circle around corners
-	for (int j = 0; j < dst_norm.rows; j++)
+	std::vector<Point> pointCollection;
+	while (pointCollection.size() < 20)
 	{
-		for (int i = 0; i < dst_norm.cols; i++)
+		/// Drawing a circle around corners
+		for (int j = 0; j < dst_norm.rows; j++)
 		{
-			if ((int)dst_norm.at<float>(j, i) > thresh)
+			for (int i = 0; i < dst_norm.cols; i++)
 			{
-				pointCollection.push_back(Point(i, j));
-				circle(dst_norm_scaled, Point(i, j), 5, Scalar(0), 2, 8, 0);
+				if ((int)dst_norm.at<float>(j, i) > thresh)
+				{
+					pointCollection.push_back(Point(i, j));
+					circle(dst_norm_scaled, Point(i, j), 5, Scalar(0), 2, 8, 0);
+				}
 			}
 		}
+		cout << "found " << pointCollection.size() << " corrners\n";
+		if (pointCollection.size() - 20 < 10)
+		{
+			thresh = thresh - 1;
+		}
+		else{
+			thresh = thresh - 10;
+		}
 	}
-
 	if (pointCollection.size() < 2)
 	{
 		cout << "Cant find 2 corners";
@@ -379,6 +393,7 @@ static void on_mouse(int event, int x, int y, int flags, void* param)
 }
 int main(int argc, char** argv)
 {
+	_CrtDbgBreak();
 	cv::CommandLineParser parser(argc, argv, "{@input| ../data/messi5.jpg |}");
 	help();
 	string filename = "pca.jpg";

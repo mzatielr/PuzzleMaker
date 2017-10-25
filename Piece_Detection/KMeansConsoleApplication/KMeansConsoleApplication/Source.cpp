@@ -26,7 +26,7 @@ char* window_name = "Edge Map";
 bool isUIMode = false;
 
 const double alpha = 1.0 / 255.0; // Don't change const value
-const int K = 10;
+const int K = 7;
 
 string path1;
 string path2;
@@ -131,7 +131,7 @@ void EdgeDetector(string path)
 
 int GetRectEdge()
 {
-	return 5;
+	return 7;
 }
 
 
@@ -490,7 +490,13 @@ void KMeans(string path)
 
 int main(int argc, char** argv)
 {
-	KMeans(argv[1]);
+	for (int i = 1; i < argc; ++i)
+	{
+		string currentImage = argv[i];
+		cout << "Handling follwing image " << currentImage << endl;
+ 		KMeans(currentImage);
+	}
+	
 	//KMeans("C:\\oldDesktop\\סדנה\\KMeansConsoleApplication\\KMeansConsoleApplication\\nonwhite.bmp");
 	waitKey();
 	destroyAllWindows();
