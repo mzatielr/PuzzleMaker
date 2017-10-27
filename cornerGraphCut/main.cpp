@@ -361,7 +361,7 @@ void GCApplication::mouseClick(int event, int x, int y, int flags, void*)
 int GCApplication::nextIter()
 {
 
-	int edgeSize = 80;
+	int edgeSize = 65;
 
 	Point brightest = getBrightPoint(*image);
 
