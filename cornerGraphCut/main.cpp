@@ -54,7 +54,7 @@ vector<Point> cornerHarris_demo( Mat& src)
 	
 	// Convert src image to gray color
 	cvtColor(src, src_gray, CV_BGR2GRAY);
-	imwrite("gray.bmp", src_gray);
+	//imwrite("gray.bmp", src_gray);
 
 
 	/// Detecting corners
@@ -63,8 +63,6 @@ vector<Point> cornerHarris_demo( Mat& src)
 	/// Normalizing
 	normalize(dst, dst_norm, 0, 255, NORM_MINMAX, CV_32FC1, Mat());
 	convertScaleAbs(dst_norm, dst_norm_scaled);
-
-	imwrite("dst_norm_scaled.bmp", dst_norm_scaled);
 
 	std::vector<Point> pointCollection;
 	while (pointCollection.size() < 20)
@@ -180,7 +178,7 @@ public:
 	static const int thickness = -1;
 	void reset();
 	void setImageAndWinName(const Mat& _image, const string& _winName);
-	void showImage() const;
+	void showImage(string folderToSaveImage = "", bool isSave = false) const;
 	void mouseClick(int event, int x, int y, int flags, void* param);
 	int nextIter();
 	int getIterCount() const { return iterCount; }
@@ -218,7 +216,7 @@ void GCApplication::setImageAndWinName(const Mat& _image, const string& _winName
 	mask.create(image->size(), CV_8UC1);
 	reset();
 }
-void GCApplication::showImage() const
+void GCApplication::showImage(string folderToSaveImage, bool isSave) const
 {
 	if (image->empty() || winName->empty())
 		return;
@@ -246,7 +244,7 @@ void GCApplication::showImage() const
 		rectangle(res, MidCornerGlobalPoint, MidCornerGlobalPoint, GREEN, 2);
 
 	}
-		
+	if (isSave) imwrite(folderToSaveImage + "res.jpg", res);
 	imshow(*winName, res);
 }
 void GCApplication::setRectInMask()
@@ -390,14 +388,24 @@ static void on_mouse(int event, int x, int y, int flags, void* param)
 {
 	gcapp.mouseClick(event, x, y, flags, param);
 }
-int main(int argc, char** argv)
+static void DestroyWindows()
 {
-	ExecutePreImageProcessing("orig5.jpg");
-	
+	destroyAllWindows();
+}
+
+
+
+int ImageHandler(const string& cs)
+{
+	ExecutePreImageProcessing(cs);
+
 	//_CrtDbgBreak();
 	help();
 
-	string filename = "pca.jpg";
+	int pos = cs.find(".");
+	string folderName = cs.substr(0, pos) + "\\";
+
+	string filename = folderName + "pca.jpg";
 	if (filename.empty())
 	{
 		cout << "\nDurn, empty filename" << endl;
@@ -436,15 +444,26 @@ int main(int argc, char** argv)
 			int newIterCount = gcapp.nextIter();
 			if (newIterCount > iterCount)
 			{
-				gcapp.showImage();
+				gcapp.showImage(folderName, true);
 				cout << iterCount << ">" << endl;
 			}
 			else
 				cout << "rect must be determined>" << endl;
-			break;
+			goto exit_main;
 		}
 	}
 exit_main:
-	destroyWindow(winName);
+	DestroyWindows();
+	return 0;
+}
+
+int main(int argc, char** argv)
+{
+	for (int i = 1; i < argc; ++i)
+	{
+		string imagePath =  argv[i];
+		cout << "Starting handle following image: " << imagePath << endl;
+		ImageHandler(imagePath);
+	}
 	return 0;
 }

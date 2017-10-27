@@ -354,7 +354,7 @@ void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca
 	cout << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n";
 
 	ShowImage(imageAfterPca, "8UImageAfterPCA");
-	imwrite("pca.jpg", imageAfterPca);
+	imwrite(path1 + "pca.jpg", imageAfterPca);
 	imageAfterPca.convertTo(imageAfterPca, CV_32FC3, alpha);
 }
 
