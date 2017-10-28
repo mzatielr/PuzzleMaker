@@ -5,6 +5,7 @@
 #include <vector>
 #include <math.h>
 #include "pca.h"
+#include <direct.h>
 
 using namespace std;
 using namespace cv;
@@ -467,11 +468,13 @@ int GCApplication::nextIter()
 	int edgeSize = 300;
 
 	Point brightest = getBrightPoint(*image);
+	/*
 	int a = max(0, MidCornerGlobalPoint.x - edgeSize);
 	int b = max(0, MidCornerGlobalPoint.y - edgeSize);
 
 	int c = min(MidCornerGlobalPoint.x + edgeSize, image->cols - 1);
 	int d = min(MidCornerGlobalPoint.y + edgeSize, image->rows - 1);
+	*/
 	//rect = Rect(Point(a, b), Point(c, d));
 
 	cout << rect << endl;
@@ -523,6 +526,9 @@ int ImageHandler(const string& cs)
 {
 	string filename;
 	Mat image;
+	int pos = cs.find(".");
+	relativeImageFolderPath = cs.substr(0, pos) + "\\";
+
 	if (runOnPca)
 	{
 	ExecutePreImageProcessing(cs);
@@ -530,8 +536,7 @@ int ImageHandler(const string& cs)
 	//_CrtDbgBreak();
 	help();
 
-	int pos = cs.find(".");
-	relativeImageFolderPath = cs.substr(0, pos) + "\\";
+	
 
     filename = relativeImageFolderPath + "pca.jpg";
 	if (filename.empty())
@@ -543,6 +548,9 @@ int ImageHandler(const string& cs)
 	}
 	else{
 		filename = imagePath;
+		//creating filder instead the PCA handler, that would do it previesly
+		cout << "Creating folder: " << relativeImageFolderPath << '\n';
+		_mkdir((relativeImageFolderPath).c_str());
 
      	}
 
@@ -560,7 +568,7 @@ int ImageHandler(const string& cs)
 	const string winName = "image";
 	namedWindow(winName, WINDOW_AUTOSIZE);
 
-	MidCornerGlobalPoint = midPointFromCollection(cornerHarris_demo(image.clone()));
+	//MidCornerGlobalPoint = midPointFromCollection(cornerHarris_demo(image.clone()));
 
 	setMouseCallback(winName, on_mouse, nullptr);
 	gcapp.setImageAndWinName(image, winName);
