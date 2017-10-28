@@ -290,7 +290,6 @@ void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca
 	int numOfDiscardedPixels = 0;
 	time(&time1);
 	Mat pcaInput = Mat::zeros(srcConverterd.rows * srcConverterd.cols, rectEdge * rectEdge * 3, CV_32FC1);
-	int kernelGenResult;
 	auto emptyArray = noArray();
 	int globalCnt = 0;
 	for (int i = 0; i < srcConverterd.rows; ++i)
@@ -299,7 +298,7 @@ void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca
 		{
 			//int kernelSize = GetKernelSize(rectEdge, i, j, srcConverterd.rows, srcConverterd.cols);
 			Mat kernel = Mat::zeros(pcaInput.cols, 3, CV_32FC1);
-			kernelGenResult = GenerateKernel(srcConverterd, i, j, kernel);
+			int kernelGenResult = GenerateKernel(srcConverterd, i, j, kernel);
 			if (kernelGenResult == 1)
 			{
 				FillDataInPcaInput(pcaInput, globalCnt, kernel);
@@ -308,8 +307,6 @@ void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca
 			else
 			{
 				numOfDiscardedPixels++;
-				//		cout << i << " "<< j<<'\n'; 
-
 			}
 			//PrintMatC1(kernel);
 		}

@@ -248,7 +248,7 @@ int main(int argc, char** argv)
 {
 	//cv::CommandLineParser parser(argc, argv, "{@input| ../data/messi5.jpg |}");
 	help();
-	string filename = "C:\\Users\\mzaitler\\Documents\\GitHub\\PuzzleMaker\\Piece_Detection\\Data\\OriginalPuzzlePhotos\\WhiteClearBackround\\yellowp.jpg";
+	string filename = "pca.jpg";
 	if (filename.empty())
 	{
 		cout << "\nDurn, empty filename" << endl;
