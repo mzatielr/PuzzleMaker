@@ -37,7 +37,9 @@ const int BGD_KEY = EVENT_FLAG_CTRLKEY;
 const int FGD_KEY = EVENT_FLAG_SHIFTKEY;
 Point MidCornerGlobalPoint;
 string relativeImageFolderPath;
-
+string DirPath;
+string imagePath;
+bool runOnPca = false;
 void ImageWrite(const string& str, const Mat& mat)
 {
 	imwrite(relativeImageFolderPath + str, mat);
@@ -519,6 +521,10 @@ void IterationRunner(int num_of_grub_cut_itration)
 
 int ImageHandler(const string& cs)
 {
+	string filename;
+	Mat image;
+	if (runOnPca)
+	{
 	ExecutePreImageProcessing(cs);
 
 	//_CrtDbgBreak();
@@ -527,13 +533,25 @@ int ImageHandler(const string& cs)
 	int pos = cs.find(".");
 	relativeImageFolderPath = cs.substr(0, pos) + "\\";
 
-	string filename = relativeImageFolderPath + "pca.jpg";
+    filename = relativeImageFolderPath + "pca.jpg";
 	if (filename.empty())
 	{
 		cout << "\nDurn, empty filename" << endl;
 		return 1;
 	}
-	Mat image = imread(filename);
+
+	}
+	else{
+		filename = imagePath;
+
+     	}
+
+	image = imread(filename);
+
+	Size size(250, 250);
+
+	resize(image, image, size);
+	
 	if (image.empty())
 	{
 		cout << "\n Durn, couldn't read image filename " << filename << endl;
@@ -548,7 +566,7 @@ int ImageHandler(const string& cs)
 	gcapp.setImageAndWinName(image, winName);
 	gcapp.showImage();
 	
-	bool isSimulate = false;
+	bool isSimulate = true;
 	int numOfGrubCutItration = 20;
 
 	if (isSimulate)
@@ -581,9 +599,12 @@ exit_main:
 
 int main(int argc, char** argv)
 {
-	for (int i = 1; i < argc; ++i)
+	int numOfImages = stoi (argv[1]);
+    DirPath = argv[2];
+
+	for (int i = 0; i < numOfImages; ++i)
 	{
-		string imagePath =  argv[i];
+	    imagePath =  DirPath+ "\\" + to_string(i) + ".jpg";
 		cout << "Starting handle following image: " << imagePath << endl;
 		ImageHandler(imagePath);
 	}
