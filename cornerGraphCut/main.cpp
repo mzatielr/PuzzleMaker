@@ -5,6 +5,7 @@
 #include <vector>
 #include <math.h>
 #include "pca.h"
+#include <direct.h>
 
 using namespace std;
 using namespace cv;
@@ -37,7 +38,9 @@ const int BGD_KEY = EVENT_FLAG_CTRLKEY;
 const int FGD_KEY = EVENT_FLAG_SHIFTKEY;
 Point MidCornerGlobalPoint;
 string relativeImageFolderPath;
-
+string DirPath;
+string imagePath;
+bool runOnPca = true;
 void ImageWrite(const string& str, const Mat& mat)
 {
 	imwrite(relativeImageFolderPath + str, mat);
@@ -308,8 +311,8 @@ void GCApplication::showImage(string folderToSaveImage, bool isSave) const
 		circle(res, *it, radius, PINK, thickness);
 	if (rectState == IN_PROCESS || rectState == SET)
 	{
-		rectangle(res, Point(rect.x, rect.y), Point(rect.x + rect.width, rect.y + rect.height), GREEN, 2);
-		rectangle(res, MidCornerGlobalPoint, MidCornerGlobalPoint, GREEN, 2);
+	//	rectangle(res, Point(rect.x, rect.y), Point(rect.x + rect.width, rect.y + rect.height), GREEN, 2);
+		//rectangle(res, MidCornerGlobalPoint, MidCornerGlobalPoint, GREEN, 2);
 
 	}
 	if (isSave) imwrite(folderToSaveImage + "res.jpg", res);
@@ -465,11 +468,13 @@ int GCApplication::nextIter()
 	int edgeSize = 300;
 
 	Point brightest = getBrightPoint(*image);
+	/*
 	int a = max(0, MidCornerGlobalPoint.x - edgeSize);
 	int b = max(0, MidCornerGlobalPoint.y - edgeSize);
 
 	int c = min(MidCornerGlobalPoint.x + edgeSize, image->cols - 1);
 	int d = min(MidCornerGlobalPoint.y + edgeSize, image->rows - 1);
+	*/
 	//rect = Rect(Point(a, b), Point(c, d));
 
 	cout << rect << endl;
@@ -519,21 +524,47 @@ void IterationRunner(int num_of_grub_cut_itration)
 
 int ImageHandler(const string& cs)
 {
+	string filename;
+	Mat image;
+	int pos = cs.find(".");
+	relativeImageFolderPath = cs.substr(0, pos) + "\\";
+
+	if (runOnPca)
+	{
 	ExecutePreImageProcessing(cs);
 
 	//_CrtDbgBreak();
 	help();
 
-	int pos = cs.find(".");
-	relativeImageFolderPath = cs.substr(0, pos) + "\\";
+	
 
-	string filename = relativeImageFolderPath + "pca.jpg";
+    filename = relativeImageFolderPath + "pca.jpg";
 	if (filename.empty())
 	{
 		cout << "\nDurn, empty filename" << endl;
 		return 1;
 	}
-	Mat image = imread(filename);
+
+	}
+	else{
+		filename = imagePath;
+		//creating filder instead the PCA handler, that would do it previesly
+		cout << "Creating folder: " << relativeImageFolderPath << '\n';
+		_mkdir((relativeImageFolderPath).c_str());
+
+     	}
+
+	image = imread(filename);
+
+	Size size(250, 250);
+
+	if (!runOnPca)
+	{
+		resize(image, image, Size(), 0.1, 0.1);
+
+	}
+
+	
 	if (image.empty())
 	{
 		cout << "\n Durn, couldn't read image filename " << filename << endl;
@@ -542,13 +573,13 @@ int ImageHandler(const string& cs)
 	const string winName = "image";
 	namedWindow(winName, WINDOW_AUTOSIZE);
 
-	MidCornerGlobalPoint = midPointFromCollection(cornerHarris_demo(image.clone()));
+	//MidCornerGlobalPoint = midPointFromCollection(cornerHarris_demo(image.clone()));
 
 	setMouseCallback(winName, on_mouse, nullptr);
 	gcapp.setImageAndWinName(image, winName);
 	gcapp.showImage();
 	
-	bool isSimulate = false;
+	bool isSimulate = true;
 	int numOfGrubCutItration = 20;
 
 	if (isSimulate)
@@ -581,11 +612,17 @@ exit_main:
 
 int main(int argc, char** argv)
 {
-	for (int i = 1; i < argc; ++i)
+
+	int numOfImages = stoi (argv[1]);
+    DirPath = argv[2];
+
+	for (int i = 0; i < numOfImages; ++i)
 	{
-		string imagePath =  argv[i];
+	    imagePath =  DirPath+ "\\" + to_string(i) + ".jpg";
 		cout << "Starting handle following image: " << imagePath << endl;
 		ImageHandler(imagePath);
 	}
 	return 0;
+	
+
 }
