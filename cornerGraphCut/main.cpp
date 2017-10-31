@@ -34,6 +34,7 @@ const Scalar PINK = Scalar(230, 130, 255);
 const Scalar BLUE = Scalar(255, 0, 0);
 const Scalar LIGHTBLUE = Scalar(255, 255, 160);
 const Scalar GREEN = Scalar(0, 255, 0);
+const Scalar Yellow = Scalar(0, 255, 255);
 const int BGD_KEY = EVENT_FLAG_CTRLKEY;
 const int FGD_KEY = EVENT_FLAG_SHIFTKEY;
 Point MidCornerGlobalPoint;
@@ -315,7 +316,13 @@ void GCApplication::showImage(string folderToSaveImage, bool isSave) const
 		//rectangle(res, MidCornerGlobalPoint, MidCornerGlobalPoint, GREEN, 2);
 
 	}
-	if (isSave) imwrite(folderToSaveImage + "res.jpg", res);
+	if (isSave)
+	{
+		Mat yellow = res.clone();
+		floodFill(yellow, Point(0, 0), Yellow ,nullptr ,cvScalarAll(0), cvScalarAll(0), 4 | (255 << 8));
+		imwrite(folderToSaveImage + "res.jpg", res);
+		imwrite(folderToSaveImage + "yellow.jpg", yellow);
+	}
 	imshow(*winName, res);
 }
 
