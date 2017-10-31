@@ -248,7 +248,7 @@ int main(int argc, char** argv)
 {
 	//cv::CommandLineParser parser(argc, argv, "{@input| ../data/messi5.jpg |}");
 	help();
-	string filename = "5.jpg";
+	string filename = "pca.jpg";
 	if (filename.empty())
 	{
 		cout << "\nDurn, empty filename" << endl;

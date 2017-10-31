@@ -519,30 +519,21 @@ void IterationRunner(int num_of_grub_cut_itration)
 
 int ImageHandler(const string& cs)
 {
-	bool isUsePCA = false;
-	bool isSimulate = true;
-
-	if (isUsePCA)
-		ExecutePreImageProcessing(cs);
+	ExecutePreImageProcessing(cs);
 
 	//_CrtDbgBreak();
 	help();
 
 	int pos = cs.find(".");
 	relativeImageFolderPath = cs.substr(0, pos) + "\\";
-	string filename;
-	if (isUsePCA) 
-		filename = relativeImageFolderPath + "pca.jpg";
-	else
-		filename = relativeImageFolderPath + cs;
 
+	string filename = relativeImageFolderPath + "pca.jpg";
 	if (filename.empty())
 	{
 		cout << "\nDurn, empty filename" << endl;
 		return 1;
 	}
-
-	Mat image = imread(cs);
+	Mat image = imread(filename);
 	if (image.empty())
 	{
 		cout << "\n Durn, couldn't read image filename " << filename << endl;
@@ -557,6 +548,7 @@ int ImageHandler(const string& cs)
 	gcapp.setImageAndWinName(image, winName);
 	gcapp.showImage();
 	
+	bool isSimulate = false;
 	int numOfGrubCutItration = 20;
 
 	if (isSimulate)
