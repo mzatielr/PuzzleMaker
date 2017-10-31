@@ -40,7 +40,7 @@ Point MidCornerGlobalPoint;
 string relativeImageFolderPath;
 string DirPath;
 string imagePath;
-bool runOnPca = false;
+bool runOnPca = true;
 void ImageWrite(const string& str, const Mat& mat)
 {
 	imwrite(relativeImageFolderPath + str, mat);
@@ -311,8 +311,8 @@ void GCApplication::showImage(string folderToSaveImage, bool isSave) const
 		circle(res, *it, radius, PINK, thickness);
 	if (rectState == IN_PROCESS || rectState == SET)
 	{
-		rectangle(res, Point(rect.x, rect.y), Point(rect.x + rect.width, rect.y + rect.height), GREEN, 2);
-		rectangle(res, MidCornerGlobalPoint, MidCornerGlobalPoint, GREEN, 2);
+	//	rectangle(res, Point(rect.x, rect.y), Point(rect.x + rect.width, rect.y + rect.height), GREEN, 2);
+		//rectangle(res, MidCornerGlobalPoint, MidCornerGlobalPoint, GREEN, 2);
 
 	}
 	if (isSave) imwrite(folderToSaveImage + "res.jpg", res);
@@ -558,7 +558,12 @@ int ImageHandler(const string& cs)
 
 	Size size(250, 250);
 
-	resize(image, image, size);
+	if (!runOnPca)
+	{
+		resize(image, image, Size(), 0.1, 0.1);
+
+	}
+
 	
 	if (image.empty())
 	{
@@ -607,6 +612,7 @@ exit_main:
 
 int main(int argc, char** argv)
 {
+
 	int numOfImages = stoi (argv[1]);
     DirPath = argv[2];
 
@@ -617,4 +623,6 @@ int main(int argc, char** argv)
 		ImageHandler(imagePath);
 	}
 	return 0;
+	
+
 }

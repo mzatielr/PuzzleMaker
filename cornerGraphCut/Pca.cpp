@@ -316,15 +316,16 @@ void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca
 
 	//pca
 	//Perform PCA analysis
+	int dim = 2;
 	time(&temp1);
-	pca_analysis(pcaInput, emptyArray, CV_PCA_DATA_AS_ROW, 3); // reduction to 3 dimensions
+	pca_analysis(pcaInput, emptyArray, CV_PCA_DATA_AS_ROW, dim); // reduction to 3 dimensions
 	time(&temp2);
 	pcaCoreTimeCounter += difftime(temp2, temp1);
 	//Mat meanPoint = pca_analysis.mean;
 	Mat projection_result;
 
 	pca_analysis.project(pcaInput, projection_result);
-	CV_Assert(3 == projection_result.cols && projection_result.rows == pcaInput.rows);
+	CV_Assert(dim == projection_result.cols && projection_result.rows == pcaInput.rows);
 
 	int shift = rectEdge / 2;
 	int count = 0;
@@ -450,6 +451,9 @@ void KMeans(string path)
 
 	Mat src1 = imread(path);
 
+	Size size(256, 256);
+
+	resize(src1, src1, Size(), 0.1,0.1);
 
 	_mkdir((path1).c_str());
 
