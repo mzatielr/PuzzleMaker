@@ -1,3 +1,7 @@
+/*
+Usage: <Number of images> <Path to folder> <Pca dimantion>
+*/
+
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
@@ -42,6 +46,8 @@ string relativeImageFolderPath;
 string DirPath;
 string imagePath;
 bool runOnPca = true;
+int PCADim=3;
+
 void ImageWrite(const string& str, const Mat& mat)
 {
 	imwrite(relativeImageFolderPath + str, mat);
@@ -312,7 +318,7 @@ void GCApplication::showImage(string folderToSaveImage, bool isSave) const
 		circle(res, *it, radius, PINK, thickness);
 	if (rectState == IN_PROCESS || rectState == SET)
 	{
-	//	rectangle(res, Point(rect.x, rect.y), Point(rect.x + rect.width, rect.y + rect.height), GREEN, 2);
+		//rectangle(res, Point(rect.x, rect.y), Point(rect.x + rect.width, rect.y + rect.height), GREEN, 2);
 		//rectangle(res, MidCornerGlobalPoint, MidCornerGlobalPoint, GREEN, 2);
 
 	}
@@ -322,8 +328,9 @@ void GCApplication::showImage(string folderToSaveImage, bool isSave) const
 		floodFill(yellow, Point(0, 0), Yellow ,nullptr ,cvScalarAll(0), cvScalarAll(0), 4 | (255 << 8));
 		imwrite(folderToSaveImage + "res.jpg", res);
 		imwrite(folderToSaveImage + "yellow.jpg", yellow);
+		
 	}
-	imshow(*winName, res);
+	
 }
 
 void GCApplication::showImageUI() const
@@ -538,7 +545,7 @@ int ImageHandler(const string& cs)
 
 	if (runOnPca)
 	{
-	ExecutePreImageProcessing(cs);
+	ExecutePreImageProcessing(cs,PCADim);
 
 	//_CrtDbgBreak();
 	help();
@@ -584,7 +591,7 @@ int ImageHandler(const string& cs)
 
 	setMouseCallback(winName, on_mouse, nullptr);
 	gcapp.setImageAndWinName(image, winName);
-	gcapp.showImage();
+	//gcapp.showImage();
 	
 	bool isSimulate = true;
 	int numOfGrubCutItration = 20;
@@ -622,7 +629,7 @@ int main(int argc, char** argv)
 
 	int numOfImages = stoi (argv[1]);
     DirPath = argv[2];
-
+	PCADim = stoi(argv[3]);
 	for (int i = 0; i < numOfImages; ++i)
 	{
 	    imagePath =  DirPath+ "\\" + to_string(i) + ".jpg";

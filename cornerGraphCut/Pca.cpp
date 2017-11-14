@@ -281,7 +281,7 @@ void FillDataInPcaInput(Mat& targetMat, int global_cnt, const Mat& kernel)
 //		srcConverterd - Type: CV_32FC3, src image to calculate pca new image
 // Output:
 //		imageAfterPca - Type: CV_32FC3, initialized to zeros Mat with equal size as src image
-void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca)
+void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca,int dim)
 {
 	double pcaCoreTimeCounter = 0;
 	time_t temp1, temp2;
@@ -316,7 +316,7 @@ void ExecutePCA(const int rectEdge, const Mat& srcConverterd, Mat& imageAfterPca
 
 	//pca
 	//Perform PCA analysis
-	int dim = 2;
+	
 	time(&temp1);
 	pca_analysis(pcaInput, emptyArray, CV_PCA_DATA_AS_ROW, dim); // reduction to 3 dimensions
 	time(&temp2);
@@ -375,7 +375,7 @@ void GenerateKmeansInputMat(const Mat& imageAfterPca, Mat& kmeansMat)
 	}
 }
 
-void GenerateNeightMatrix(Mat& src1)
+void GenerateNeightMatrix(Mat& src1,int dim)
 {
 	const int rectEdge = GetRectEdge();
 
@@ -398,11 +398,13 @@ void GenerateNeightMatrix(Mat& src1)
 	//imageAfterPCA will be smaller then the original one because image edges were trimmed !!
 	Mat imageAfterPca = Mat::zeros(src1.rows - (rectEdge - 1), src1.cols - (rectEdge - 1), CV_32FC3);
 	cout << "Starting pca" << endl;
-	ExecutePCA(rectEdge, src1, imageAfterPca);
+	ExecutePCA(rectEdge, src1, imageAfterPca,dim);
 	cout << "End of PCA stage" << endl;
 	//ShowImage(imageAfterPca, "DoubleImageAfterPCA");
 	//imageAfterPca.convertTo(imageAfterPca, CV_8UC3, 255.0);
 	return;
+
+
 	Mat kmeansMat = Mat::zeros(imageAfterPca.rows * imageAfterPca.cols, 1, CV_32FC3);
 
 	GenerateKmeansInputMat(imageAfterPca, kmeansMat);
@@ -438,7 +440,7 @@ void GenerateNeightMatrix(Mat& src1)
 	imwrite(path1 + "AfterClusterRemoval.bmp", clustered);
 }
 
-void KMeans(string path)
+void KMeans(string path,int dim)
 {
 
 	size_t position = path.find(".");
@@ -473,14 +475,14 @@ void KMeans(string path)
 	//RemoveClusters(src1);
 
 	//imwrite("wspp1.bmp", src1);
-	GenerateNeightMatrix(src1);
+	GenerateNeightMatrix(src1,dim);
 	//EdgeDetector(src);
 	/// Wait until user exit program by pressing a key
 }
 
-void ExecutePreImageProcessing(string imagePath)
+void ExecutePreImageProcessing(string imagePath,int dim)
 {
 	cout << "Starting PCA for image " << imagePath << endl;
-	KMeans(imagePath); 
+	KMeans(imagePath,dim); 
 	cout << "Ending PCA processing" << endl;
 }
